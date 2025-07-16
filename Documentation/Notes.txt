@@ -1,0 +1,120 @@
+LED when in open drain 	and in No pull up Pull down then LED can not be turned on since the CMOS transistor can be turned ON.
+But LED is terminated to GND and connected to Pin. LED does not get any VCC. Therefore activate the pull up resistor.
+Since th epull up resistor is 40K, lED intensity is low instead os using internal LED use exter LED with external pull resistor
+
+
+SPI configuration
+1. SPI mode - Master, Slave
+2. Bus Config - FUll duplex. Half Duplex, Simplex
+   Data frame format - 8, or 16 bit
+4. CPHA  and CPOL - default 0, 0
+5. Slave Select management - Hardware and software
+6. Speed
+
+
+SPI interrupts
+1. Tx buffer ready to be loaded - In Control register TXEIE bit shall be set
+2. Rx is full					- In Control register RXEIE bit shall be set
+3. Master mode fault - In single master mode you must avoid this error - - In Control register ERRIE bit shall be set
+4. Overryn error				- In Control register ERRIE bit shall be set
+5. CRC error					- In Control register ERRIE bit shall be set
+6. TI frame frame error			- In Control register ERRIE bit shall be set
+7. Interrupts can be enabled/ disbaled separately
+
+
+Common debugging 
+1. Check master mode bit it is set in config register
+2. SPI peripheral bit is enabled in
+3. Clock is enabled
+4. Pin configs(Alternamte function must be set)
+5. Register maybe overwritten  by some other(Save reg contents before sending the data to debug)
+6. Slave select pin must be set to 0
+7. No SPI interrupt issue - enable TX and Rx interrupt, enable IRQ number in NVIC
+
+
+UART
+UART Hardwrae component
+1. Baudrate generator 
+2. Tx and Rx Shift register
+3. Transmit and receive buffers
+4. Transmit and receive control blocks
+5. FIFO memory buffer
+To remember these use spi blocks
+
+Synch and asynch mode
+Asynch Mode - start and stop nit is used
+
+Pins
+Tx, Rx, with Flow control CTS(clear to send) and RTS
+UART BIdirectional mode required Rx and Tx pins. Uart idle state Tx line is held high.
+
+UART Tx engine continuouslt samples the line to detect the start bit of a frame.
+
+When HW flow control is used, UART will send the data out when CTS is pulled low.
+
+Rquest to send(actrive low) - Send signal to request the data.
+RTS and CTS of aster slave are connected interchangably
+
+Frame Format - 
+Start bit  - Low
+8 bit data(it can be 9 bit as well. 1 bit is parity bit)
+Stop bit - High. Stop bit can be 1, 1.5 and 2 bits
+
+Baud reate -
+How fast data is sent over serial line. Units - Bits per second
+ 
+ Parity - 
+ 1 Bit error detection. Even or Odd parity
+ Even Parity - Parity bit is set to either one or zero to make total number of one's in data equal to Even number of bits
+ 
+ Shift register converts data into series ob bits, it gets the data from Tx buffer.
+ Unlike SPI, UART has 2 different Tx and Rx Shift registers
+ 
+ 
+ Configuranle parameters
+ Mode - USART, UART
+ Baudrate
+ No of stop bits
+ WordLength
+ ParityControl
+ HwFlowControl - 
+ 
+ USART Oversampeling - 
+ The receiver implements different iser-configurable techniques(except in Synchronous mode), for data recovery by discriminating between valid incoming data and noise.
+ Oversampeling can be selected by programming the OVER8 bit in USAR_CR1 register and can be either 16 or 5 times the baud rate clock
+ If 16 times sampeling is used, out of 16 samples only 8, 9 and 10 saples are used to define the bit level. If atlist 2 samples are one then the bit is one otherwise it is zero,
+ If all 3 samples are not one(111) or zero(000) then it is Noise error. NE bit is set.
+ 
+ Noise Error-
+ The NE flag is set when noise is detected on receiving frame. THe invlaid data is still transferred from the shift register to Data register. Youser may consider or discard the frame based in application logic.
+ 
+ 
+ Selecitng proper oversampelling method:
+ Oversampeling by 8 - You can chieve max baud rate of Fplck/8. The max receiver tolerance to clock deviation is reduced.
+ Oversampeling by 16 - You can chieve max baud rate of Fplck/16. The max receiver tolerance to clock deviation is increased.
+ 
+ 🔹 Why is Clock Tolerance Important in UART?
+UART is asynchronous—no shared clock line.
+
+Both transmitter and receiver generate their own baud rates based on their internal clocks.
+
+If the clocks differ too much (due to oscillator inaccuracies or drift), the receiver will sample at the wrong time, leading to:
+Framing errors
+Garbage data
+Communication failure
+ 
+ 
+ UART Baudrate calculation-
+ All our discussion is related to Asynchronous mode.
+ 
+ Bitrate( - No. of bits per second)
+ Baudrate( - No. of symnols per second)
+ 
+ Baudrate = (fclk/(8*USARTDIV)) - If OVER8 = 1
+ Baudrate = (fclk/(16*USARTDIV)) - If OVER8 = 0
+ 
+ If Fck = 16MHz and OVER8 = 0, Baudrate = 96000 what is USARTDIV in  BRR register?
+USARTDIV = 104.1875. 
+BBR has fraction part of 4 bits and Mentissa of 12 bits
+Fraction = 0.1875 * 16(OVER8 = 0) = 0x03
+Mentissa = 104 = 0x68

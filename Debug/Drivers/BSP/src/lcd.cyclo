@@ -1,0 +1,14 @@
+../Drivers/BSP/src/lcd.c:12:6:lcd_send_command	1
+../Drivers/BSP/src/lcd.c:31:6:lcd_print_char	1
+../Drivers/BSP/src/lcd.c:43:6:lcd_print_auto_wrap	6
+../Drivers/BSP/src/lcd.c:72:6:lcd_print_string	2
+../Drivers/BSP/src/lcd.c:84:6:lcd_init	1
+../Drivers/BSP/src/lcd.c:161:13:write_4_bits	1
+../Drivers/BSP/src/lcd.c:172:6:lcd_display_clear	1
+../Drivers/BSP/src/lcd.c:187:6:lcd_display_return_home	1
+../Drivers/BSP/src/lcd.c:204:6:lcd_set_cursor	2
+../Drivers/BSP/src/lcd.c:213:13:lcd_enable	1
+../Drivers/BSP/src/lcd.c:221:9:lcd_enqueue_job	2
+../Drivers/BSP/src/lcd.c:232:6:lcd_process_jobs	10
+../Drivers/BSP/src/lcd.c:290:13:mdelay	2
+../Drivers/BSP/src/lcd.c:295:13:udelay	2

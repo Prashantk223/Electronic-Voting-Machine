@@ -1,0 +1,9 @@
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:8:6:timer_init	1
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:13:6:timer2_init	1
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:30:6:timer2_delay_ms	1
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:41:6:TIM2_IRQHandler	1
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:46:6:TIM2_IRQHandler_Handler	4
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:65:9:is_timer2_delay_elapsed	1
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:75:6:timer3_os_tick_init	1
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:102:10:os_timer_get_tick	1
+../Drivers/HAL_Drivers/src/stm32f407xx_timer_driver.c:107:6:TIM3_IRQHandler	2
