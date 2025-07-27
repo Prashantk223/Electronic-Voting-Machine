@@ -24,21 +24,21 @@
     transform: translateY(-5px);
 }
 
-.reel-card {
+.EVM-card {
     background: white;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.reel-thumbnail {
+.EVM-thumbnail {
     position: relative;
     width: 100%;
     padding-top: 177.78%; /* 16:9 aspect ratio */
     overflow: hidden;
 }
 
-.reel-thumbnail img {
+.EVM-thumbnail img {
     position: absolute;
     top: 0;
     left: 0;
@@ -66,21 +66,21 @@
     font-size: 3rem;
 }
 
-.reel-thumbnail:hover .play-overlay {
+.EVM-thumbnail:hover .play-overlay {
     opacity: 1;
 }
 
-.reel-info {
+.EVM-info {
     padding: 1rem;
 }
 
-.reel-info h3 {
+.EVM-info h3 {
     margin: 0;
     font-size: 1.2rem;
     color: #333;
 }
 
-.reel-info p {
+.EVM-info p {
     margin: 0.5rem 0 0;
     color: #666;
     font-size: 0.9rem;
