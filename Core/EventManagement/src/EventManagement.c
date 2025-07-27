@@ -5,6 +5,8 @@
 #include "ModeManagement.h"
 #include <stm32f407xx_gpio_driver.h>
 #include <stm32f407xx_timer_driver.h>
+#include <string.h>
+#include "lcd.h"
 
 Event_Key_t Event_Key;
 static void EventMngt_ButtonEvent(void);
@@ -24,6 +26,8 @@ void EventMngt_Init()
         GPIO_Init(&Event_GPIO_Handle[i].GPIO_Handle_Ev);
     	GPIO_IRQInterruptConfig(Event_GPIO_Handle[i].IRQ_Num, ENABLE);
     }
+     //set default values
+    memcpy(CandidateVoting_Status, CandidateVoting_Status_Default, sizeof(CandidateVoting_Status_Default));
 }
 uint8_t EventMngt_ReadButton(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber)
 {
@@ -47,7 +51,7 @@ void EXTI1_IRQHandler(void)
 {
   //start debounce timer
 	timer2_delay_ms(100);
-	GPIO_IRQHandling(GPIO_PIN_NO_0);
+	GPIO_IRQHandling(GPIO_PIN_NO_1);
 	Event_Key.Status = 	Event_Key_Pressed;
 	Event_Key.Key_Index = 	1;
 }
@@ -55,7 +59,7 @@ void EXTI2_IRQHandler(void)
 {
   //start debounce timer
 	timer2_delay_ms(100);
-	GPIO_IRQHandling(GPIO_PIN_NO_1);
+	GPIO_IRQHandling(GPIO_PIN_NO_2);
 	Event_Key.Status = 	Event_Key_Pressed;
 	Event_Key.Key_Index = 	2;
 }
@@ -64,7 +68,7 @@ void EXTI3_IRQHandler(void)
 {
   //start debounce timer
 	timer2_delay_ms(100);
-	GPIO_IRQHandling(GPIO_PIN_NO_2);
+	GPIO_IRQHandling(GPIO_PIN_NO_3);
 	Event_Key.Status = 	Event_Key_Pressed;
 	Event_Key.Key_Index = 	3;
 }
@@ -72,7 +76,7 @@ void EXTI4_IRQHandler(void)
 {
   //start debounce timer
 	timer2_delay_ms(100);
-	GPIO_IRQHandling(GPIO_PIN_NO_3);
+	GPIO_IRQHandling(GPIO_PIN_NO_4);
 	Event_Key.Status = 	Event_Key_Pressed;
 	Event_Key.Key_Index = 	4;
 }
@@ -80,7 +84,7 @@ void EXTI9_5_IRQHandler(void)
 {
   //start debounce timer
 	timer2_delay_ms(100);
-	GPIO_IRQHandling(GPIO_PIN_NO_1);
+	GPIO_IRQHandling(GPIO_PIN_NO_8);
 	Event_Key.Status = 	Event_Key_Pressed;
 	Event_Key.Key_Index = 	5;
 }
@@ -90,8 +94,16 @@ void EventMngt_Main()
 	{
 		if (is_timer2_delay_elapsed() == 1)
 		{
-			Event_Key.Status = 	Event_Key_Debounced;
-			EventMngt_ButtonEvent();
+			  Event_Key.Status = 	Event_Key_Debounced;
+			  if(ModeManagement.Mode == MODE_NORMAL)
+			  {
+					  EventMngt_ButtonEvent();
+			  }
+			  else if(ModeManagement.Mode == MODE_CONFIG)
+			  {
+				  //if config mode, call the config mode callback
+				  ModeM_ConfigMode_Ev_Callback(Event_Key.Key_Index);
+			  }
 		}
 	}
 
@@ -102,7 +114,6 @@ static void EventMngt_ButtonEvent(void)
     if((uint8_t)0x1 == (uint8_t)GPIO_ReadFromInputPin(pGPIOx,
     		Event_GPIO_Handle[Event_Key.Key_Index].GPIO_Handle_Ev.GPIO_PinConfig.GPIO_PinNumber))
     {
-    	Event_Key.Status = 	Event_Key_Confirm;
         //update the button status
         for(int i =0; i < NUM_CANDIDATES; i++)
         {
@@ -110,21 +121,41 @@ static void EventMngt_ButtonEvent(void)
             		Event_GPIO_Handle[Event_Key.Key_Index].GPIO_Handle_Ev.GPIO_PinConfig.GPIO_PinNumber)
             {
                 CandidateVoting_Status[i].votes++;
-                //show message on lcd that vote registered
-            	Event_Key.Status = 	Event_Key_Idle;
+
+
+                LCD_Job_t msg = {
+                    .type = LCD_JOB_SCROLLING,
+                    .duration_ms = 100,
+                };
+                strcpy(msg.message, "You voted for ");
+                strcat(msg.message, CandidateVoting_Status[i].CandName);
+                lcd_enqueue_job(msg);
+                lcd_display_clear();
                 break;
+            }
+            else if(Event_Key.Key_Index == SYSCONFIGPIN_INDEX)
+            {
+                //if config button pressed, call the config mode callback
+                EventMngt_ButtonDebounceIRQ_CONFIG_BUTTON();
+            }
+            else
+            {
+                //if not a valid button, reset the event key status
+
             }
         }
     }
+
+	Event_Key.Status = 	Event_Key_Idle;
 }
 void EventMngt_ButtonDebounceIRQ_CONFIG_BUTTON(void)
 {
     //dummy
-    GPIO_RegDef_t *pGPIOx = GPIOA;
-    if((uint8_t)0x1 == (uint8_t)GPIO_ReadFromInputPin(pGPIOx, CONFIG_BUTTON))
+    GPIO_RegDef_t *pGPIOx = Event_GPIO_Handle[SYSCONFIGPIN_INDEX].GPIO_Handle_Ev.pGPIOx;
+    if((uint8_t)0x1 == (uint8_t)GPIO_ReadFromInputPin(pGPIOx, Event_GPIO_Handle[SYSCONFIGPIN_INDEX].GPIO_Handle_Ev.GPIO_PinConfig.GPIO_PinNumber))
     {
         //callback to Mode management to set config mode
-        ModeM_ConfigMode_Ev_Callback();
+        ModeM_ConfigMode_Ev_Callback(5);
     }
 }
 

@@ -8,7 +8,7 @@
 "./Drivers/HAL_Drivers/src/stm32f407xx_usart_driver.o"
 "./Middleware/Schedular/CoperativeSchedular/src/sched.o"
 "./Middleware/Schedular/CoperativeSchedular/src/task.o"
-"./Src/015uart_tx.o"
+"./Src/015uart_tx2.o"
 "./Src/syscalls.o"
 "./Src/sysmem.o"
 "./Startup/startup_stm32f407vgtx.o"

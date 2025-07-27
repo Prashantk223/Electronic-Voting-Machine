@@ -53,17 +53,7 @@ int main(void)
 
 	GPIO_PeriClockControl(GPIOD, ENABLE);
 	GPIO_Init(&GopiLed);
-#if 0
-	GPIO_Handle_t GopiBtn;
-	GopiBtn.pGPIOx = GPIOA;
-	GopiBtn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_0;
-	GopiBtn.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_IN;
-	GopiBtn.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-	GopiBtn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD; // since PA0 switch already has external pull down resistor
 
-	GPIO_PeriClockControl(GPIOA, ENABLE);
-	GPIO_Init(&GopiBtn);
-#endif
     //MCU_Init;
 	//Timer init
 	//timer2_init();

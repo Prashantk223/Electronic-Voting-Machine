@@ -1,7 +1,8 @@
 
 #include "lcd.h"
 #include "stm32f407xx_gpio_driver.h"
-
+#include <string.h>
+#include "stm32f407xx_timer_driver.h"
 LCD_JobQueue_t LCD_JobQueue = {0};
 
 static void write_4_bits(uint8_t value);
@@ -47,7 +48,7 @@ void lcd_print_auto_wrap(const char* str)
 	mdelay(100);
     int count = 0;
 
-    while (*str && count < 16)
+    while (*str != '\0' && count < 16)
     {
         lcd_print_char(*str++);
         count++;
@@ -217,7 +218,10 @@ static void lcd_enable(void)
 	GPIO_WriteToOutputPin(LCD_GPIO_PORT, LCD_GPIO_EN, GPIO_PIN_RESET);
 	udelay(100);/* execution time > 37 micro seconds */
 }
-
+uint8_t lcd_queue_size(void)
+{
+	return LCD_JobQueue.count;
+}
 uint8_t lcd_enqueue_job(LCD_Job_t job)
 {
 	if(LCD_JobQueue.count >= LCD_JOB_QUEUE_SIZE)
@@ -228,7 +232,10 @@ uint8_t lcd_enqueue_job(LCD_Job_t job)
 	LCD_JobQueue.tail = (LCD_JobQueue.tail + 1) % LCD_JOB_QUEUE_SIZE;
 	return 1;
 }
-
+void lcd_job_clear()
+{	
+	memset(&LCD_JobQueue, 0, sizeof(LCD_JobQueue));
+}
 void lcd_process_jobs(void)
 {
     static LCD_Job_t *activeJob = NULL;
@@ -236,6 +243,7 @@ void lcd_process_jobs(void)
     static uint32_t os_time_tick = 0;
     static uint8_t scrollIndex = 0;
 
+    os_time_tick = os_timer_get_tick();
     if((LCD_JobQueue.count != 0) && (!activeJob))
 	{
     	activeJob = &LCD_JobQueue.jobs[LCD_JobQueue.head];
@@ -272,6 +280,7 @@ void lcd_process_jobs(void)
     			}
     			else
     			{
+    				scrollIndex = 0;
         			activeJob = 0;
         			lcd_display_clear();
     			}

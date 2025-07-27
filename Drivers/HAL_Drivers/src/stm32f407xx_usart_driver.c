@@ -2,6 +2,8 @@
 
 #include "stm32f407xx_usart_driver.h"
 
+USART_Handle_t usart2_handle;
+
 /*********************************************************************
  * @fn      		  - USART_SetBaudRate
  *
@@ -284,6 +286,14 @@ uint8_t USART_GetFlagStatus(USART_RegDef_t *pUSARTx, uint8_t StatusFlagName)
    return RESET;
 }
 
+void USART_SendDataIT_Response(uint8_t *pTxBuffer, uint32_t Len)
+{
+	USART_SendDataIT(&usart2_handle, pTxBuffer, Len);
+	//USART_SendData(&usart2_handle,(uint8_t*)msg[cnt],strlen(msg[cnt]));
+
+}
+#if 0
+#endif
 /*********************************************************************
  * @fn      		  - USART_SendData
  *
@@ -295,7 +305,6 @@ uint8_t USART_GetFlagStatus(USART_RegDef_t *pUSARTx, uint8_t StatusFlagName)
  *
  * @return            -
  *
- * @Note              - Resolve all the TODOs
 
  */
 void USART_SendData(USART_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t Len)
@@ -459,7 +468,14 @@ uint8_t USART_SendDataIT(USART_Handle_t *pUSARTHandle,uint8_t *pTxBuffer, uint32
 	return txstate;
 }
 
-
+void USART_ReceiveDataIT_Request(uint8_t *pRxBuffer, uint32_t Len)
+{
+	//First lets enable the reception in interrupt mode
+	//this code enables the receive interrupt
+	while ( USART_ReceiveDataIT(&usart2_handle,pRxBuffer,Len) != USART_READY );
+}
+#if 0
+#endif
 /*********************************************************************
  * @fn      		  - USART_ReceiveDataWithIT
  *
@@ -900,7 +916,51 @@ void USART_IRQHandling(USART_Handle_t *pUSARTHandle)
 
 }
 
+void USART2_Init(void)
+{
+	usart2_handle.pUSARTx = USART2;
+	usart2_handle.USART_Config.USART_Baud = USART_STD_BAUD_115200;
+	usart2_handle.USART_Config.USART_HWFlowControl = USART_HW_FLOW_CTRL_NONE;
+	usart2_handle.USART_Config.USART_Mode = USART_MODE_TXRX;
+	usart2_handle.USART_Config.USART_NoOfStopBits = USART_STOPBITS_1;
+	usart2_handle.USART_Config.USART_WordLength = USART_WORDLEN_8BITS;
+	usart2_handle.USART_Config.USART_ParityControl = USART_PARITY_DISABLE;
+	USART_Init(&usart2_handle);
+}
 
+
+void 	USART2_GPIOInit(void)
+{
+	GPIO_Handle_t usart_gpios;
+
+	usart_gpios.pGPIOx = GPIOA;
+	usart_gpios.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_ALTFN;
+	usart_gpios.GPIO_PinConfig.GPIO_PinOPType = GPIO_OP_TYPE_PP;
+	usart_gpios.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PIN_PU;
+	usart_gpios.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+	usart_gpios.GPIO_PinConfig.GPIO_PinAltFunMode =7;
+
+	usart_gpios.GPIO_PinConfig.GPIO_PinNumber  = GPIO_PIN_NO_2;
+	GPIO_Init(&usart_gpios);
+
+	usart_gpios.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_3;
+	GPIO_Init(&usart_gpios);
+
+}
+void USART_Init_DCM(void)
+{
+	USART2_GPIOInit();
+    USART2_Init();
+
+    USART_IRQInterruptConfig(IRQ_NO_USART2,ENABLE);
+
+    USART_PeripheralControl(USART2,ENABLE);
+}
+
+void USART2_IRQHandler(void)
+{
+	USART_IRQHandling(&usart2_handle);
+}
 
 /*********************************************************************
  * @fn      		  - USART_ApplicationEventCallback
@@ -920,3 +980,4 @@ __weak void USART_ApplicationEventCallback(USART_Handle_t *pUSARTHandle,uint8_t 
 {
 
 }
+

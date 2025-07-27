@@ -152,7 +152,7 @@ void USART_SendData(USART_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t L
 void  USART_ReceiveData(USART_Handle_t *pUSARTHandle,uint8_t *pRxBuffer, uint32_t Len);
 uint8_t USART_SendDataIT(USART_Handle_t *pUSARTHandle,uint8_t *pTxBuffer, uint32_t Len);
 uint8_t USART_ReceiveDataIT(USART_Handle_t *pUSARTHandle,uint8_t *pRxBuffer, uint32_t Len);
-
+void USART_ReceiveDataIT_Request(uint8_t *pRxBuffer, uint32_t Len);
 /*
  * IRQ Configuration and ISR handling
  */
@@ -169,12 +169,12 @@ void USART_ClearFlag(USART_RegDef_t *pUSARTx, uint16_t StatusFlagName);
 void USART_PeripheralControl(USART_RegDef_t *pUSARTx, uint8_t EnOrDi);
 void USART_SetBaudRate(USART_RegDef_t *pUSARTx, uint32_t BaudRate);
 
-
+void USART_SendDataIT_Response(uint8_t *pTxBuffer, uint32_t Len);
 /*
  * Application Callbacks
  */
 void USART_ApplicationEventCallback(USART_Handle_t *pUSARTHandle,uint8_t ApEv);
-
+void USART_Init_DCM(void);
 
 
 

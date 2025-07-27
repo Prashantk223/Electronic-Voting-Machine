@@ -11,7 +11,7 @@ typedef enum{
 
 typedef struct{
 	LCD_JobType_t type;
-	char message[33];  // Full LCD (16x2) max message
+	char message[100];  // Full LCD (16x2) max message
 	uint32_t duration_ms;  // Display time for static, scroll frame interval
 	uint32_t timestamp_ms; // Scheduled time (from os_tick_count)
 }LCD_Job_t;
@@ -37,6 +37,8 @@ void lcd_set_cursor(uint8_t row, uint8_t column);
 void lcd_print_auto_wrap(const char* str);
 void lcd_process_jobs(void);
 uint8_t lcd_enqueue_job(LCD_Job_t job);
+void lcd_job_clear();
+uint8_t lcd_queue_size(void);
 /*Application configurable items */
 
 #define LCD_GPIO_PORT  GPIOD

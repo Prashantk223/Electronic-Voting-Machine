@@ -1,0 +1,4 @@
+../Src/015uart_tx2.c:37:6:GPIO_ButtonInit	1
+../Src/015uart_tx2.c:64:6:delay	2
+../Src/015uart_tx2.c:68:5:main	1
+../Src/015uart_tx2.c:102:6:testingfun	1
