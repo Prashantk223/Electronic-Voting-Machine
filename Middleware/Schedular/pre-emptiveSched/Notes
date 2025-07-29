@@ -1,0 +1,175 @@
+Q. why pre emption is required explain shortly
+-> to overcome the inefficeiny of co-operative schedulig. Low prio tasks hogs the CPU for more than 1 systick
+
+Q. Why Priority is required
+Ans: Even though we have resolved the low prio task hoggin the scheduler we are scheduling is still inefficint. He as well Low prio task can hog the cpu for entire 1 systick. Until high prio gets its turn.
+In prio based handleling for every systick we are going to check which has high out of all ready tasks.
+
+Q. In an RTOS (Real-Time Operating System), task states are essential for tracking and managing the execution of multiple tasks in a predictable and organized manner. Here's why task states are required:
+
+preempt with prio scheduling, a high prio task might be stuck because of resource unavailability but it is still getting invoked endlessly and the task which has resource is not getting the CPU. Here, use states with sync premitives. so that the waiting task gets blocked and does not get invoked again until resource is available.
+
+
+1. Efficient Task Scheduling
+Task states allow the RTOS scheduler to decide which task to run next based on priority and availability. Common states like Ready, Running, Blocked, and Suspended help determine which tasks are eligible for CPU time.
+
+2. Clear Separation of Task Conditions
+Each task can be in a distinct condition:
+    Ready: Can run, waiting for CPU
+    Running: Currently executing
+    Blocked (Waiting): Waiting for an event (e.g., delay, semaphore)
+    Suspended: Manually stopped, cannot be scheduled
+    Terminated: Finished execution (optional in some RTOS)
+These help model real-world dependencies like waiting for a message or I/O.
+
+3. Synchronization and Event Handling
+When a task is waiting for a signal, message, mutex, etc., it enters a Blocked or Waiting state. The RTOS must know this to:
+    Avoid scheduling the task prematurely
+    Wake it up only when the event occurs
+
+4. Debugging and System Monitoring
+Knowing task states helps developers:
+    Debug issues (e.g., why a task isn't running)
+    Profile performance (e.g., which task hogs CPU)
+    Detect deadlocks or starvation
+
+5. Prevent Wasted CPU Cycles
+
+Instead of looping endlessly (polling), tasks can go into a Blocked or Sleeping state, freeing CPU time for others. This is essential for power efficiency and real-time responsiveness.
+6. Priority and Preemption Handling
+Task states help enforce priority rules:
+    Preempt lower priority tasks
+    Skip tasks that are waiting or suspended
+This ensures deterministic behavior — a key requirement in real-time systems.
+
+
+Q why priority inheritance  is required.
+What is Priority Inversion?
+
+Imagine this scenario:
+Task	Priority	What It Does
+T1	Low	Holds a mutex
+T2	High	Needs the same mutex — blocked
+T3	Medium	Runs normally
+
+out PI:
+
+    T1 holds the mutex but has low priority, so it gets preempted by T3.
+
+    T2 (high priority) is blocked, waiting for T1 to release the mutex.
+
+    But T1 can't run because T3 is hogging the CPU.
+    → T2 is blocked by T3, even though T2 has higher priority — this is inversion.
+
+How Priority Inheritance Fixes It
+
+When T2 (high priority) is blocked waiting on a mutex held by T1 (low priority):
+
+Priority Inheritance temporarily boosts T1’s priority to that of T2.
+That allows T1 to preempt T3, run, and release the mutex quickly.
+
+After releasing the mutex, T1’s priority returns to its original value.
+
+
+This PendSV_Handler is a context switch handler used in ARM Cortex-M microcontrollers to switch between tasks in an RTOS. It is triggered by a PendSV interrupt, which is designed for low-priority, software-triggered context switching.
+
+1. R0–R3, R12, LR, PC, and xPSR are automatically saved during exception entry.
+2. Save current task context (registers R4–R11)
+3. Store stack pointer into current task's TCB
+4. Update current task to next task
+5. Load stack pointer of new task from TCB
+6. Restore new task context
+7. Return from exception (switch to task)
+
+os_yield() triggers a context switch manually by setting the PendSV interrupt pending flag in the System Control Block (SCB).
+PendSV interrupt is triggered (pending bit is set).
+Once all higher-priority interrupts are cleared, the PendSV_Handler runs.
+PendSV_Handler does a task context switch:
+    Saves the current task context
+    Loads the next task context
+
+Q. Why os_delay() and os_wait() are required:
+Ans: Both os_delay() and os_wait() make the calling task go to the Blocked or Waiting state.
+    os_delay(100); → Task is delayed for 100 ticks.
+    os_wait(&sem); → Task waits until the semaphore is available.
+
+    | Function     | Purpose                            | Effect on Task |
+| ------------ | ---------------------------------- | -------------- |
+| `os_delay()` | Wait for time duration (ticks/ms)  | Task → Blocked |
+| `os_wait()`  | Wait for event/semaphore/condition | Task → Blocked |
+
+__WFI() — Wait For Interrupt
+
+This is a Cortex-M intrinsic instruction that:
+    Puts the CPU into low-power sleep mode (e.g. sleep/deep sleep)
+    CPU halts until any interrupt occurs
+    After the interrupt, the CPU wakes up and resumes from the next instruction (i.e., back to the top of the loop)
+
+
+
+    🔹 Types of RTOS Schedulers
+1. Cooperative Scheduler
+
+    Tasks voluntarily yield the CPU (e.g., via os_yield() or os_delay()).
+
+    No preemption; one task runs until it gives up control.
+
+    Simple to implement.
+
+✅ Pros: Low overhead, deterministic
+❌ Cons: One faulty task can block the whole system
+2. Preemptive Scheduler
+
+    RTOS forcibly switches to a higher-priority task when needed.
+
+    Timer interrupt (e.g., SysTick) triggers context switching.
+
+✅ Pros: Real-time behavior, responsive
+❌ Cons: More complex, needs context saving/restoring
+3. Round-Robin Scheduler (within same priority)
+
+    Tasks at the same priority get CPU time in turns.
+
+    Each task runs for a time slice, then yields or gets preempted.
+
+✅ Pros: Fair sharing, avoids starvation
+❌ Cons: Not priority-aware alone
+4. Rate Monotonic Scheduling (RMS)
+
+    Static priority-based: tasks with shorter periods get higher priority.
+
+    Used for periodic real-time tasks.
+
+✅ Pros: Easy to analyze schedulability
+❌ Cons: Only works with fixed periodic tasks
+5. Earliest Deadline First (EDF)
+
+    Dynamic priority: task with closest deadline runs first.
+
+    More flexible than RMS.
+
+✅ Pros: High CPU utilization
+❌ Cons: Harder to implement, analyze
+6. Multilevel Queue Scheduler
+
+    Tasks divided into queues based on type (real-time, interactive, background).
+
+    Each queue may use different scheduling policy.
+
+✅ Pros: Good for mixed workloads
+❌ Cons: More overhead and complexity
+🔧 Which One to Use?
+Application Type	Recommended Scheduler
+Simple embedded systems	Cooperative or Round-Robin
+Real-time control	Preemptive with Priority
+Periodic RT tasks	RMS or EDF
+Mixed (real-time + UI)	Multilevel Queue
+
+| Scheduler Type   | Preemptive        | Priority-Based | Use Case                       |
+| ---------------- | ----------------- | -------------- | ------------------------------ |
+| Cooperative      | ❌                 | 🚫           | Low-complexity systems         |
+| Preemptive       | ✅                 | ✅           | Real-time systems              |
+| Round-Robin      | ✅ (same priority) | 🚫           | Time-sharing tasks             |
+| RMS              | ✅                 | Static        | Periodic real-time tasks       |
+| EDF              | ✅                 | Dynamic       | Complex real-time scheduling   |
+| Multilevel Queue | ✅                 | Mixed         | Systems with varied task types |
