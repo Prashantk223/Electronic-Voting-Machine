@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}EVM Backend{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">EVM Backend State</h2>
+    <p><b>Current EVM State:</b> {{ evm_state }}</p>
+    <h4>Candidates</h4>
+    <ul>
+        {% for candidate, name in candidates.items() %}
+            <li>{{ candidate }} → {{ name if name else "Not Configured" }}</li>
+        {% endfor %}
+    </ul>
+    <p>Check your terminal for button press logs.</p>
+</div>
+{% endblock %}

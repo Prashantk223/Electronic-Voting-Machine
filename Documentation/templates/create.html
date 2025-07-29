@@ -1,157 +1,136 @@
 {% extends "base.html" %}
-
-{% block title %}Electronics Voting Machine{% endblock %}
-
-{% block extra_css %} 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/create.css') }}">
-<style>
-.evm-options button,
-.evm-options select {
-    height: 42px;              /* Ensure same height for both */
-    box-sizing: border-box;    /* Include border/padding in height */
-    vertical-align: middle;    /* Align content vertically */
-    font-size: 16px;           /* Ensure same font size */
-}
-.evm-options button {
-    display: block;
-    width: 50%;
-    margin-bottom: 12px;
-    border: 2px solid #007bff;
-    background: #fff;
-    color: #007bff;
-    border-radius: 4px;
-    padding: 10px 0;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-}
-.evm-options button:hover {
-    background: #007bff;
-    color: #fff;
-}
-.evm-options select {
-    width: 50%;
-    margin-left: 8px;
-    border: 2px solid #007bff;
-    border-radius: 4px;
-    padding: 0 10px;           /* Adjust padding for vertical centering */
-    color: #007bff;
-    font-weight: 600;
-    background: #fff;
-    transition: background 0.2s, color 0.2s;
-}
-.evm-options select:focus {
-    outline: none;
-    background: #e6f0ff;
-}
-</style>
-{% endblock %}
+{% block title %}EVM Control Panel{% endblock %}
 
 {% block content %}
-<section class="upload-section">
-    <div class="container">
-        <div class="upload-container">
-            <h1 class="upload-title">Communicate with EVM</h1>
-            <p class="upload-instructions">Select following options</p>
-            
-            <form action="/create" method="post" class="dropzone" id="myDropzone">
-<div class="evm-options" style="display: flex; flex-direction: column; gap: 12px;">
-  <div style="display: flex; align-items: center;">
-    <button type="button" style="width: 50%;" onclick="getCurrentEvmState()">Get Current EVM State</button>
-    <span id="evm-state-display" style="width: 50%; margin-left: 8px; color: #007bff; font-weight: 600; display: flex; justify-content: center; align-items: center;">
-    Ready</span>
-  </div>
-<div style="display: flex; align-items: center; justify-content: center;">
-  <button type="button" style="width: 50%;" onclick="setEvmState()">Set EVM State</button>
-  <select id="evm-state-select" style="width: 50%; margin-left: 8px; display: block;">
-    <option value="Ready">Ready</option>
-    <option value="Voting">Voting</option>
-    <option value="Counting">Counting</option>
-    <option value="Result">Result</option>
-    <option value="Error">Error</option>
-  </select>
-</div>
-<form action="{{ url_for('reset_evm') }}" method="post" style="display: flex; width: 100%;">
-    <button type="submit" style="width: 50%;">Reset EVM</button>
-    <span style="width: 50%; margin-left: 8px; color: #007bff; font-weight: 600;">
-        {{ reset_status if reset_status else "" }}
-    </span>
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div class="border border-dashed border-blue-400 p-6 rounded-md w-full max-w-xl bg-gray-50 shadow-lg text-center">
+
+    <h2 class="text-lg font-medium text-gray-700 mb-6">Select following options</h2>
+
+    <!-- Get Current EVM State -->
+    <form method="post" class="mb-4">
+      <input type="hidden" name="action" value="get_state">
+      <div class="flex items-center justify-between gap-6 w-full px-4">
+        <button class="btn self-start">Get Current EVM State</button>
+        <span class="evm-state-display flex-shrink-0">
+          {{ evm_state if evm_state else "INIT" }}
+        </span>
+      </div>
+    </form>
+
+    <!-- Set EVM State -->
+    <form method="post" class="mb-4">
+      <input type="hidden" name="action" value="set_state">
+      <div class="flex flex-col items-start gap-2 px-4">
+        <button class="btn">Set EVM State</button>
+        <select name="evm_state" class="select">
+          <option {% if evm_state == 'Ready' %}selected{% endif %}>Ready</option>
+          <option {% if evm_state == 'Voting' %}selected{% endif %}>Voting</option>
+          <option {% if evm_state == 'Result' %}selected{% endif %}>Result</option>
+        </select>
+      </div>
+    </form>
+
+    <!-- Reset EVM -->
+    <form method="post" class="mb-4 px-4 flex items-start">
+      <input type="hidden" name="action" value="reset_evm">
+      <button class="btn">Reset EVM</button>
+    </form>
+
+    <!-- Configure Candidate Name -->
+    <form method="post" class="mb-4 px-4">
+      <input type="hidden" name="action" value="configure_candidate">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 items-start">
+        <label class="text-sm font-semibold text-gray-700">Configure Candidate Name</label>
+        <select name="candidate_select" class="select">
+          <option>Candidate 1</option>
+          <option>Candidate 2</option>
+          <option>Candidate 3</option>
+          <option>Candidate 4</option>
+          <option>Candidate 5</option>
+        </select>
+        <input type="text" name="candidate_name" placeholder="Enter Name" class="input">
+        <button class="btn">Submit</button>
+      </div>
+    </form>
+
+    <!-- Erase All Configured Data -->
+    <form method="post" class="px-4 flex items-start">
+      <input type="hidden" name="action" value="erase_config">
+      <button class="btn">Erase All Configured Data</button>
+    </form>
+
+<!-- Spacer for distance -->
+<div style="height: 30px;"></div>
+
+<!-- Read All Votes -->
+<form method="post" class="mb-4 px-4">
+  <input type="hidden" name="action" value="read_votes">
+  <button class="btn btn-info">Read All Votes</button>
 </form>
-  <div style="display: flex; align-items: center;">
-    <button type="button" style="width: 50%;" onclick="configureCandidateNames()">Configure Candidate Names</button>
-    <span id="evm-candidate-display" style="width: 50%; margin-left: 8px; color: #007bff; font-weight: 600;"></span>
-  </div>
-  <div style="display: flex; align-items: center;">
-    <button type="button" style="width: 50%;" onclick="eraseAllData()">Erase All Configured Data</button>
-    <span id="evm-erase-display" style="width: 50%; margin-left: 8px; color: #007bff; font-weight: 600;"></span>
+
+{% if votes_display %}
+<div class="mt-4 px-4 text-center">
+  <h3>Current Votes:</h3>
+  <table border="1" cellpadding="8" cellspacing="0" style="margin: 15px auto; border-collapse: collapse;">
+    <tr style="background-color:#f0f0f0;">
+      <th style="padding:8px 20px;">Candidate</th>
+      <th style="padding:8px 20px;">Votes</th>
+    </tr>
+    {% for candidate, vote in votes_display.items() %}
+    <tr>
+      <td style="text-align:center;">{{ candidates[candidate] if candidates[candidate] else candidate }}</td>
+      <td style="text-align:center;">{{ vote }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
   </div>
 </div>
-<div id="evm-status" style="margin-top:16px; color:#007bff; font-weight:600;"></div>
-                    <button type="button" class="add-file-btn" onclick="addFileInput()">+ Add File</button>
-                </div>
-                
-                <div class="text-input-container">
-                    <textarea class="text-input" id="textInput" name="text" placeholder="Enter your text to be added as voice here..." rows="4"></textarea>
-                </div>
-                
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    Connect EVM
-                </button>
-            </form>
-        </div>
-    </div>
-</section>
+
+<!-- Styles -->
+<style>
+  .btn {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 4px 0 #3c9742;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .btn:hover {
+    background-color: #45a049;
+    box-shadow: 0 2px 0 #3c9742;
+    transform: translateY(1px);
+  }
+
+  .select {
+    @apply border border-blue-400 rounded-md px-3 py-2 text-blue-700 font-medium;
+    font-size: 1rem;
+    min-width: 150px;
+  }
+
+  .input {
+    @apply border border-blue-400 rounded-md px-3 py-2 text-gray-700;
+    font-size: 1rem;
+    min-width: 150px;
+  }
+
+  .evm-state-display {
+    background-color: #3182ce; /* Tailwind's blue-600 */
+    color: white;
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 6px;
+    min-width: 100px;
+    text-align: center;
+  }
+</style>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    let fileCounter = 2; // Start from 2 since we already have file1
-
-    function addFileInput() {
-        const fileInputs = document.getElementById('fileInputs');
-        const newFileInput = document.createElement('div');
-        newFileInput.className = 'file-input-group';
-        newFileInput.innerHTML = `
-            <input name="file${fileCounter}" type="file" class="file-input" />
-            <button type="button" class="remove-file-btn" onclick="removeFileInput(this)">×</button>
-        `;
-        fileInputs.appendChild(newFileInput);
-        fileCounter++;
-    }
-
-    function removeFileInput(button) {
-        const fileInputGroup = button.parentElement;
-        fileInputGroup.remove();
-    }
-function getCurrentEvmState() {
-  // Simulate fetching EVM status (replace with actual logic or AJAX call)
-  document.getElementById('evm-state-display').innerText = "Ready"; // or your dynamic state
-
-}
-
-function setEvmState() {
-  // Add logic to set EVM state
-  const selectedState = document.getElementById('evm-state-select').value;
-}
-/*
-function resetEvm() {
-  const btn = event.currentTarget;
-  const originalBg = btn.style.backgroundColor;
-  const originalColor = btn.style.color;
-  btn.style.backgroundColor = "#dc3545"; // Bootstrap red
-  btn.style.color = "#fff";
-  setTimeout(() => {
-    btn.style.backgroundColor = "";
-    btn.style.color = "#007bff";
-  }, 3000);
-}
-*/
-function configureCandidateNames() {
-  // Add logic to configure candidate names
-}
-
-function eraseAllData() {
-  // Add logic to erase all configured data
-}
-</script>
-{% endblock %} 
