@@ -1,4 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
+import serial
+import time
+
+# Configure your COM port and baud rate here
+COM_PORT = 'COM9'     # Replace with your COM port
+BAUD_RATE = 115200      # Match with the device
 
 # ✅ Create app first
 app = Flask(__name__)
@@ -125,3 +131,30 @@ def evm():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    
+    try:
+        # Open the serial port
+        ser = serial.Serial(COM_PORT, BAUD_RATE, timeout=1)
+        print(f"[✓] Connected to {COM_PORT} at {BAUD_RATE} baud.\n")
+
+        while True:
+            # READ incoming data
+            if ser.in_waiting:
+                data = ser.readline().decode('utf-8', errors='ignore').strip()
+                if data:
+                    print(f"[Received] {data}")
+
+            # SEND data
+            '''msg = input("Enter message to send (or 'exit' to quit): ")
+            if msg.lower() == 'exit':
+                break
+            ser.write((msg + '\n').encode('utf-8'))'''
+
+    except serial.SerialException as e:
+        print(f"[ERROR] Could not open port {COM_PORT}: {e}")
+    except KeyboardInterrupt:
+        print("\n[INFO] Exiting on user interrupt.")
+    finally:
+        if 'ser' in locals() and ser.is_open:
+            ser.close()
+            print(f"[✓] Port {COM_PORT} closed.")
