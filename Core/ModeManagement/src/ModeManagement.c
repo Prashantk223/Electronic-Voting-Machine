@@ -334,7 +334,7 @@ void Dcm_Main(void)
                      else if (0xFF01 == routine)
                      {
                         //00 05 31 01 FF 00 AA
-                        if( Dcm_Process.rxBuffer[5] == 0xAA)
+                        if( Dcm_Process.rxBuffer[6] == 0xAA)
                         {
                             //read votes of all candidates. Response structure - nameLength(1byte) + Name(100bytes) + votes(4bytes)
                             index = 6;

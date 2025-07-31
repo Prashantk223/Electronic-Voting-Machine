@@ -24,9 +24,11 @@
       <div class="flex flex-col items-start gap-2 px-4">
         <button class="btn">Set EVM State</button>
         <select name="evm_state" class="select">
-          <option {% if evm_state == 'Ready' %}selected{% endif %}>Ready</option>
-          <option {% if evm_state == 'Voting' %}selected{% endif %}>Voting</option>
-          <option {% if evm_state == 'Result' %}selected{% endif %}>Result</option>
+          <option {% if evm_state == 'MODE_IDLE' %}selected{% endif %}>IDLE</option>
+          <option {% if evm_state == 'MODE_CONFIG_INIT' %}selected{% endif %}>CONFIG_INIT</option>
+          <option {% if evm_state == 'MODE_CONFIG' %}selected{% endif %}>CONFIG</option>
+          <option {% if evm_state == 'MODE_NORMAL' %}selected{% endif %}>NORMAL</option>
+          <option {% if evm_state == 'MODE_SHUTDOWN' %}selected{% endif %}>SHUTDOWN</option>
         </select>
       </div>
     </form>
