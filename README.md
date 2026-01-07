@@ -72,6 +72,25 @@ This project demonstrates **full-stack embedded development**, including hardwar
 
 ---
 
+## Normal Mode (Voting Operation)
+
+- Displayed candidate names on a **16×2 LCD**
+- Accepted user input via **hardware buttons** to cast votes for specific candidates
+- Stored and managed vote counts reliably in **system memory**
+
+---
+
+## PC-Based Graphical Interface
+
+- Developed a **Python-based backend** with an HTML interface to communicate with the embedded system over **UART**
+
+### HTML GUI Features
+- Real-time display of vote counts per candidate
+- Configuration and update of candidate names
+- Reset and control of voting data and operating modes
+
+- Enabled **visualization and system control** without direct physical interaction with the hardware
+
 ## Technologies Used
 
 - Microcontroller: **STM32F407**
